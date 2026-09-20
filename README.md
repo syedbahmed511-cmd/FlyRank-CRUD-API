@@ -39,3 +39,5 @@ GET	/tasks/{task_id}	Get one task
 POST	/tasks	Create a task
 PUT	/tasks/{task_id}	Update a task
 DELETE	/tasks/{task_id}	Delete a task
+
+<img width="1160" height="699" alt="image" src="https://github.com/user-attachments/assets/a7690acf-1bd5-46e1-997e-ed9a77b1e5d3" />
