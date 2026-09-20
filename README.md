@@ -12,6 +12,10 @@ A simple CRUD API built with Python and FastAPI for managing a to-do task list.
 - Input validation
 - Swagger API documentation
 
+## Preview
+
+<img width="1160" height="699" alt="image" src="https://github.com/user-attachments/assets/eb641655-9e37-45a5-b69e-c2f95d26b6c0" />
+
 ## Installation
 
 Install the required packages:
@@ -40,4 +44,3 @@ POST	/tasks	Create a task
 PUT	/tasks/{task_id}	Update a task
 DELETE	/tasks/{task_id}	Delete a task
 
-<img width="1160" height="699" alt="image" src="https://github.com/user-attachments/assets/a7690acf-1bd5-46e1-997e-ed9a77b1e5d3" />
