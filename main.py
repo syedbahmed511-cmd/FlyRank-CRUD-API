@@ -1,26 +1,48 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
+import sqlite3
 
 app = FastAPI()
 
+DATABASE = "tasks.db"
 
-tasks = [
-    {
-        "id": 1,
-        "title": "Learn FastAPI",
-        "done": False
-    },
-    {
-        "id": 2,
-        "title": "Build CRUD API",
-        "done": False
-    },
-    {
-        "id": 3,
-        "title": "Upload project to GitHub",
-        "done": True
-    }
-]
+
+def get_db_connection():
+    connection = sqlite3.connect(DATABASE)
+    connection.row_factory = sqlite3.Row
+    return connection
+
+
+def initialize_database():
+    connection = get_db_connection()
+
+    connection.execute("""
+        CREATE TABLE IF NOT EXISTS tasks (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT NOT NULL,
+            done BOOLEAN NOT NULL DEFAULT 0
+        )
+    """)
+
+    count = connection.execute(
+        "SELECT COUNT(*) FROM tasks"
+    ).fetchone()[0]
+
+    if count == 0:
+        connection.executemany(
+            "INSERT INTO tasks (title, done) VALUES (?, ?)",
+            [
+                ("Learn FastAPI", 0),
+                ("Build CRUD API", 0),
+                ("Upload project to GitHub", 1)
+            ]
+        )
+
+    connection.commit()
+    connection.close()
+
+
+initialize_database()
 
 
 class TaskCreate(BaseModel):
@@ -30,78 +52,3 @@ class TaskCreate(BaseModel):
 class TaskUpdate(BaseModel):
     title: str | None = None
     done: bool | None = None
-
-
-@app.get("/")
-def home():
-    return {
-        "message": "Hello, FlyRank!",
-        "project": "CRUD API",
-        "stage": 4
-    }
-
-
-@app.get("/health")
-def health_check():
-    return {"status": "ok"}
-
-
-@app.get("/tasks")
-def get_tasks():
-    return tasks
-
-
-@app.get("/tasks/{task_id}")
-def get_task(task_id: int):
-    for task in tasks:
-        if task["id"] == task_id:
-            return task
-
-    raise HTTPException(status_code=404, detail="Task not found")
-
-
-@app.post("/tasks", status_code=201)
-def create_task(task_data: TaskCreate):
-    if task_data.title is None or not task_data.title.strip():
-        raise HTTPException(status_code=400, detail="Title is required")
-
-    new_task = {
-        "id": max(task["id"] for task in tasks) + 1,
-        "title": task_data.title.strip(),
-        "done": False
-    }
-
-    tasks.append(new_task)
-    return new_task
-
-
-@app.put("/tasks/{task_id}")
-def update_task(task_id: int, task_data: TaskUpdate):
-    for task in tasks:
-        if task["id"] == task_id:
-
-            if task_data.title is not None:
-                if not task_data.title.strip():
-                    raise HTTPException(
-                        status_code=400,
-                        detail="Title cannot be empty"
-                    )
-
-                task["title"] = task_data.title.strip()
-
-            if task_data.done is not None:
-                task["done"] = task_data.done
-
-            return task
-
-    raise HTTPException(status_code=404, detail="Task not found")
-
-
-@app.delete("/tasks/{task_id}", status_code=204)
-def delete_task(task_id: int):
-    for task in tasks:
-        if task["id"] == task_id:
-            tasks.remove(task)
-            return
-
-    raise HTTPException(status_code=404, detail="Task not found")
