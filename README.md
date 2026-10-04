@@ -1,6 +1,6 @@
 # FlyRank CRUD API
 
-A simple CRUD API built with Python and FastAPI for managing a to-do task list.
+A CRUD API built with Python, FastAPI, and SQLite for managing tasks.
 
 ## Features
 
@@ -9,38 +9,17 @@ A simple CRUD API built with Python and FastAPI for managing a to-do task list.
 - Read a single task
 - Update tasks
 - Delete tasks
-- Input validation
-- Swagger API documentation
+- SQLite database persistence
+- Data survives server restarts
+- Automatic database and table creation
 
-## Preview
+## Why SQLite?
 
-<img width="1160" height="699" alt="image" src="https://github.com/user-attachments/assets/eb641655-9e37-45a5-b69e-c2f95d26b6c0" />
+SQLite was chosen because it is lightweight, requires no separate database server, and stores the database in a single file. This makes it simple and suitable for this project.
 
-## Installation
+## Database
 
-Install the required packages:
+The SQLite database is stored in:
 
-```bash
-python -m pip install "fastapi[standard]"
-
-Run the API
-python -m fastapi dev main.py
-
-The API will run at:
-
-http://127.0.0.1:8000
-
-Swagger documentation:
-
-http://127.0.0.1:8000/docs
-
-API Endpoints
-Method	Endpoint	Description
-GET	/	API information
-GET	/health	Health check
-GET	/tasks	Get all tasks
-GET	/tasks/{task_id}	Get one task
-POST	/tasks	Create a task
-PUT	/tasks/{task_id}	Update a task
-DELETE	/tasks/{task_id}	Delete a task
-
+```text
+tasks.db
