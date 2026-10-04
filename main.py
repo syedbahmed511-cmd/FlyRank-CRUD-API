@@ -7,11 +7,19 @@ app = FastAPI()
 DATABASE = "tasks.db"
 
 
+# -------------------------
+# Database connection
+# -------------------------
+
 def get_db_connection():
     connection = sqlite3.connect(DATABASE)
     connection.row_factory = sqlite3.Row
     return connection
 
+
+# -------------------------
+# Initialize database
+# -------------------------
 
 def initialize_database():
     connection = get_db_connection()
@@ -45,6 +53,10 @@ def initialize_database():
 initialize_database()
 
 
+# -------------------------
+# Request models
+# -------------------------
+
 class TaskCreate(BaseModel):
     title: str | None = None
 
@@ -54,12 +66,16 @@ class TaskUpdate(BaseModel):
     done: bool | None = None
 
 
+# -------------------------
+# Basic endpoints
+# -------------------------
+
 @app.get("/")
 def home():
     return {
         "message": "Hello, FlyRank!",
         "project": "CRUD API",
-        "stage": 1
+        "stage": 2
     }
 
 
@@ -69,6 +85,10 @@ def health_check():
         "status": "ok"
     }
 
+
+# -------------------------
+# GET all tasks
+# -------------------------
 
 @app.get("/tasks")
 def get_tasks():
@@ -90,6 +110,10 @@ def get_tasks():
     ]
 
 
+# -------------------------
+# GET one task
+# -------------------------
+
 @app.get("/tasks/{task_id}")
 def get_task(task_id: int):
     connection = get_db_connection()
@@ -106,6 +130,48 @@ def get_task(task_id: int):
             status_code=404,
             detail="Task not found"
         )
+
+    return {
+        "id": row["id"],
+        "title": row["title"],
+        "done": bool(row["done"])
+    }
+
+
+# -------------------------
+# POST create task
+# -------------------------
+
+@app.post("/tasks", status_code=201)
+def create_task(task_data: TaskCreate):
+
+    # Validate title
+    if task_data.title is None or not task_data.title.strip():
+        raise HTTPException(
+            status_code=400,
+            detail="Title is required"
+        )
+
+    connection = get_db_connection()
+
+    # Insert task into SQLite
+    cursor = connection.execute(
+        "INSERT INTO tasks (title, done) VALUES (?, ?)",
+        (task_data.title.strip(), 0)
+    )
+
+    connection.commit()
+
+    # Get ID of newly created task
+    new_task_id = cursor.lastrowid
+
+    # Get the newly created task
+    row = connection.execute(
+        "SELECT id, title, done FROM tasks WHERE id = ?",
+        (new_task_id,)
+    ).fetchone()
+
+    connection.close()
 
     return {
         "id": row["id"],
